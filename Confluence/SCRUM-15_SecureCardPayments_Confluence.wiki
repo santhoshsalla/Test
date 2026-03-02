@@ -1,0 +1,59 @@
+h1. SCRUM-15 — Secure Card Payments — Test Strategy & Test Tasks
+
+h2. Objective
+As a registered customer, I want to pay outstanding invoices using debit/credit card so that payments are completed securely and instantly.
+
+h2. Scope
+* In-scope: Card payments via payment gateway, UI error handling (expired card, CVV), 3D Secure (3DS) flows, network/timeouts, webhook reconciliation, security (no PAN/CVV storage).
+* Out-of-scope: Alternative payment methods (bank transfer), accounting reconciliation beyond webhook retry logic.
+
+h2. Test Strategy
+* Approach: Combination of automated end-to-end tests (Cucumber + Selenium) for critical flows and manual/ exploratory tests for gateway-side behaviors and DB inspections.
+* Environments: Staging with payment gateway sandbox, HTTPS enabled, DB access for security verification.
+* Test types: Functional (positive/negative), Security (card data handling), Integration (gateway/webhooks), Resilience (timeouts, retries), Regression (smoke).
+* Test data: Use gateway-provided test card numbers (e.g., 4111111111111111) and dedicated sandbox accounts.
+
+h2. Test Tasks (high level)
+# Review user story SCRUM-15 acceptance criteria and confirm environment readiness
+# Create/extend BDD feature files to cover positive and negative flows
+# Implement step definitions and PageObjects or extend existing ones
+# Add automated tests to CI pipeline and validate they pass against staging gateway
+# Perform security checks: verify PAN/CVV not persisted in DB/logs
+# Coordinate with backend to verify webhook retries and reconciliation
+# Create PR and request review from QA and Backend owners
+
+h2. Test Cases (selected — full list in repository: Automation/TestCases/SecureCardPayments_TestCases.md)
+|| Test Case ID || Priority || Title || Summary || Pre-condition || Expected Result ||
+| TC_CARD_01 | High | Successful card payment | Complete payment using valid card details | User logged in; unpaid invoice | Payment processed; invoice marked Paid; receipt sent |
+| TC_CARD_02 | High | Expired card rejected | Expired card shows clear error | User on payment screen | Payment blocked; invoice remains unpaid |
+| TC_CARD_03 | Medium | Incorrect CVV handling | CVV error prevents charging | User on payment screen | CVV error shown; no invoice update |
+| TC_CARD_04 | High | Card data not persisted | PAN/CVV not stored | Payment conducted | Only token/reference stored; CVV not logged |
+
+h2. Automation Plan
+* Framework: Existing Java + Cucumber + Selenium (Automation/ directory)
+* Runner: com.company.runners.TestRunner (CucumberOptions configured)
+* New artifacts added in branch: feature/SCRUM-15-secure-card-tests
+** Feature files:** Automation/src/test/resources/features/secure_card_payment.feature
+** Additional scenarios:** Automation/src/test/resources/features/secure_card_payment_additional.feature
+** Step definitions:** Automation/src/test/java/com/company/tests/steps/PaymentSteps.java (existing)
+** New placeholders for extended scenarios:** Automation/src/test/java/com/company/tests/steps/PaymentAdditionalSteps.java
+
+h2. Branch & PR
+* Branch created: feature/SCRUM-15-secure-card-tests
+* PR: (created) — see repository Pull Requests (title: "SCRUM-15: Add secure card payments tests and placeholders")
+
+h2. Execution & Reporting
+* Execute via Maven: mvn test -Dtest=TestRunner
+* Reports: HTML cucumber report generated at target/cucumber-reports.html
+* CI: Add pipeline job to run tests against staging with gateway sandbox credentials
+
+h2. Risks & Mitigations
+* Risk: Gateway test card behaviour may change — Mitigate: pin gateway sandbox version and test cards, coordinate with gateway team.
+* Risk: Webhook flakiness — Mitigate: add idempotency checks, webhook retry tests and monitoring.
+
+h2. Next Steps / Ownership
+* QA: Extend step implementations for 3DS, webhook simulation, and network fault injection
+* Backend: Provide DB access and webhook simulation endpoints
+* DevOps: Ensure staging environment has sandbox gateway config and certificates
+
+p. Notes: This wiki content is stored in the repository at Confluence/SCRUM-15_SecureCardPayments_Confluence.wiki. To publish to Confluence, paste the contents into your Confluence page editor (Wiki Markup) and save. Replace the PR placeholder link with the actual PR URL after review.
