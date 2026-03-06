@@ -193,6 +193,86 @@ Feature: Cart and mini-cart behavior
 
   @TC-20013 @ui @negative
   Scenario: Quantity input rejects non-numeric/decimal values and reverts
+
+  @TC-20019 @ui @session
+  Scenario: Guest cart persists for active session in same browser
+    When I navigate to the PDP for product "B"
+    And I add the product to the cart from the PDP
+    Then the header cart badge count should increase by 1
+    When I close the current storefront tab and open a new tab to the storefront
+    And I open the mini-cart from the header
+    Then the mini-cart should contain product "B" with quantity 1
+
+  @TC-20020 @ui @negative @session
+  Scenario: Guest cart does not persist after session ends (new session)
+    When I navigate to the PLP that lists product "A"
+    And I add product "A" to the cart from the PLP
+    And I open the mini-cart from the header
+    Then the mini-cart should contain product "A" with quantity 1
+    When I end the browser session and start a new session
+    And I navigate to the home page
+    And I open the mini-cart from the header
+    Then the mini-cart should show an empty cart state
+
+  @TC-20021 @ui @auth
+  Scenario: Logged-in cart persists across logout/login on same device
+    Given I am logged in as a valid user
+    When I navigate to the PLP that lists product "A"
+    And I add product "A" to the cart from the PLP
+    Then the header cart badge count should increase by 1
+    When I log out
+    And I log back in as the same user
+    And I open the mini-cart from the header
+    Then the mini-cart should contain product "A" with the last confirmed quantity
+
+  @TC-20022 @ui @auth @multiDevice
+  Scenario: Logged-in cart continuity across devices/browsers
+    Given I have two shopper sessions for the same logged-in user
+    When in session "device1" I add product "B" to the cart
+    Then in session "device2" the mini-cart should contain product "B" with quantity 1
+    When in session "device2" I set quantity for product "B" to 2 using the quantity input
+    Then in session "device1" the mini-cart should contain product "B" with quantity 2
+
+  @TC-20023 @ui @auth
+  Scenario: Merge guest cart into account cart on login (unique items)
+    Given the account cart already contains product "A" with quantity 1
+    When as a guest I add product "B" to the cart
+    And I log in to the account
+    And I open the mini-cart from the header
+    Then the mini-cart should contain product "A" with quantity 1
+    And the mini-cart should contain product "B" with quantity 1
+    And the header cart badge count should reflect the merged cart quantity
+
+  @TC-20024 @ui @auth @negative
+  Scenario: Merge guest cart with account cart sums duplicates and enforces stock
+    Given the account cart already contains product "C" with quantity 2
+    And product "C" has available stock of 3
+    When as a guest I ensure product "C" quantity is 2
+    And I log in to the account
+    Then I should see a maximum quantity message indicating 3
+    And the mini-cart should contain product "C" with a valid backend-confirmed quantity not exceeding 3
+
+  @TC-20025 @api
+  Scenario: Add endpoint supports idempotency key to avoid duplicate adds on retry
+    Given the cart is empty via the cart API
+    When I call Add Item API for product "A" with idempotency key "K1"
+    And I retry the same Add Item API request with idempotency key "K1"
+    Then the cart state should be unchanged compared to the first response
+    When I fetch the cart via the cart API
+    Then the cart should contain product "A" exactly once with quantity per rules
+    When I call Add Item API for product "A" with idempotency key "K2"
+    Then the cart should reflect only the intended additional add behavior
+
+  @TC-20026 @ui @negative
+  Scenario: Add-to-cart failure shows error and UI reverts to last confirmed state
+    Given product "A" is in the cart with quantity 1
+    And I am able to simulate an add-to-cart API failure
+    When I navigate to the PLP that lists product "A"
+    And I attempt to add product "A" to the cart while the add API is failing
+    Then I should see an add-to-cart error message
+    And the header cart badge count should remain at the last confirmed value
+    When I open the mini-cart from the header
+    Then the mini-cart should contain product "A" with quantity 1
     Given product "A" is in the cart with quantity 1
     When I open the mini-cart from the header
     And I set quantity for product "A" to "abc" using the quantity input
