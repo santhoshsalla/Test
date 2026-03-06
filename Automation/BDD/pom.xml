@@ -29,6 +29,14 @@
       <version>${selenium.version}</version>
     </dependency>
 
+    <!-- Selenium DevTools (for TC-20026 network simulation on Chromium) -->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-devtools-v121</artifactId>
+      <version>${selenium.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Cucumber -->
     <dependency>
       <groupId>io.cucumber</groupId>
