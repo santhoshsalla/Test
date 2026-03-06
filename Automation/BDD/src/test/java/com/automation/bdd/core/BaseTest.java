@@ -9,6 +9,15 @@ public abstract class BaseTest {
         return DriverFactory.getDriver();
     }
 
+    protected void setUp() {
+        DriverFactory.createDriver();
+        openBaseUrl();
+    }
+
+    protected void tearDown() {
+        DriverFactory.quitDriver();
+    }
+
     protected void openBaseUrl() {
         String baseUrl = ConfigReader.getRequired("baseUrl");
         driver().get(baseUrl);
