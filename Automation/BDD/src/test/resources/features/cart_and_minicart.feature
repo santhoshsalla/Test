@@ -57,3 +57,87 @@ Feature: Cart and mini-cart behavior
     When I open the mini-cart from the header
     Then the mini-cart should not contain product "D"
 
+
+  @TC-20006 @ui
+  Scenario: Cart badge updates without page reload after add
+    When I navigate to the PLP that lists product "A"
+    And I add product "A" to the cart from the PLP
+    Then I should see an add-to-cart confirmation message without a full page reload
+    And the header cart badge count should be updated immediately after confirmation
+    When I navigate to the home page via site navigation
+    Then the header cart badge count should remain correct within the session
+
+  @TC-20007 @ui
+  Scenario: Mini-cart opens from header on any page and shows current items
+    Given I have at least 1 item in the cart
+    When I navigate to the PLP that lists product "A"
+    And I open the mini-cart from the header
+    Then the mini-cart should show an item list with quantities and subtotal
+    When I navigate to the PDP for product "B"
+    And I open the mini-cart from the header
+    Then the mini-cart should show the latest cart state
+    When I navigate to the home page
+    And I open the mini-cart from the header
+    Then the mini-cart should show the latest cart state
+
+  @TC-20008 @ui
+  Scenario: Mini-cart shows backend-authoritative subtotal/taxes/discounts after change
+    Given I have at least 1 item in the cart
+    When I open the mini-cart from the header
+    And I record the displayed mini-cart totals
+    And I perform a cart change by adding product "A"
+    Then the mini-cart totals should match the backend cart totals (including rounding)
+
+  @TC-20009 @ui
+  Scenario: Mini-cart reflects latest cart state after adding item on different page
+    When I navigate to the PLP that lists product "A"
+    And I add product "A" to the cart from the PLP
+    Then the header cart badge count should increase by 1
+    When I navigate to the PDP for product "B"
+    And I add the product to the cart from the PDP
+    Then the header cart badge count should increase by 1
+    When I open the mini-cart from the header
+    Then the mini-cart should contain product "A" with quantity 1
+    And the mini-cart should contain product "B" with quantity 1
+    And the mini-cart subtotal should match the backend cart subtotal
+
+  @TC-20010 @ui
+  Scenario: Increase quantity via + control updates line total and subtotal (backend)
+    Given product "A" is in the cart with quantity 1
+    When I open the mini-cart from the header
+    Then the mini-cart should contain product "A" with quantity 1
+    When I increase quantity for product "A" using the plus control
+    Then the mini-cart should contain product "A" with quantity 2
+    And the mini-cart totals should match the backend cart totals
+    When I close and reopen the mini-cart
+    Then the mini-cart should contain product "A" with quantity 2
+    And the mini-cart totals should match the backend cart totals
+
+  @TC-20011 @ui @negative
+  Scenario: Decrease quantity via - control does not go below minimum valid quantity
+    Given product "A" is in the cart with quantity 1
+    When I open the mini-cart from the header
+    And I decrease quantity for product "A" using the minus control
+    Then the mini-cart should contain product "A" with quantity 1
+    And the mini-cart totals should match the backend cart totals
+
+  @TC-20012 @ui
+  Scenario: Update quantity via direct input (valid integer) recalculates totals
+    Given product "B" is in the cart with quantity 1
+    When I open the mini-cart from the header
+    And I set quantity for product "B" to 3 using the quantity input
+    Then the mini-cart should contain product "B" with quantity 3
+    And the mini-cart totals should match the backend cart totals
+    When I close and reopen the mini-cart
+    Then the mini-cart should contain product "B" with quantity 3
+
+  @TC-20013 @ui @negative
+  Scenario: Quantity input rejects non-numeric/decimal values and reverts
+    Given product "A" is in the cart with quantity 1
+    When I open the mini-cart from the header
+    And I set quantity for product "A" to "abc" using the quantity input
+    Then the mini-cart should contain product "A" with quantity 1
+    And the mini-cart totals should match the backend cart totals
+    When I set quantity for product "A" to "1.5" using the quantity input
+    Then the mini-cart should contain product "A" with quantity 1
+    And I should see a helpful quantity validation message
