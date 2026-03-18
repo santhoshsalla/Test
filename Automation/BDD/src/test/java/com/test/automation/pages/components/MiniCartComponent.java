@@ -19,6 +19,7 @@ public class MiniCartComponent {
     private final By closeButton = By.cssSelector("[data-testid='mini-cart-close'], [aria-label='Close']");
     private final By viewCartLink = By.cssSelector("[data-testid='view-cart']");
 
+    private final By proceedToCheckout = By.cssSelector("[data-testid='proceed-to-checkout'], [data-testid='checkout'], button[aria-label='Proceed to checkout']");
     private final By errorState = By.cssSelector("[data-testid='mini-cart-error']");
     private final By errorRetry = By.cssSelector("[data-testid='mini-cart-retry']");
 
