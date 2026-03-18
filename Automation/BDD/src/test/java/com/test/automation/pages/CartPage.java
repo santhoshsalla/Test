@@ -103,6 +103,22 @@ public class CartPage {
         return MoneyUtils.parseMoney(raw);
     }
 
+    public String getName(String sku) {
+        WebElement row = getRowBySku(sku);
+        return row.findElement(By.cssSelector("[data-testid='item-name']")).getText();
+    }
+
+    public BigDecimal getUnitPrice(String sku) {
+        WebElement row = getRowBySku(sku);
+        String raw = row.findElement(By.cssSelector("[data-testid='unit-price']")).getText();
+        return MoneyUtils.parseMoney(raw);
+    }
+
+    public boolean hasQuantityControl(String sku) {
+        WebElement row = getRowBySku(sku);
+        return !row.findElements(By.cssSelector("[data-testid='qty-input'], input[name='quantity']")).isEmpty();
+    }
+
     public BigDecimal getDisplayedTotal() {
         String raw = wait.visible(cartTotal).getText();
         return MoneyUtils.parseMoney(raw);
