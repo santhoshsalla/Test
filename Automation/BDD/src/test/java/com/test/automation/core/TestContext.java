@@ -11,6 +11,8 @@ public class TestContext {
     public String lastAddedSku;
     public String lastRemovedSku;
 
+    public String lastViewedUrl;
+
     public static final ThreadLocal<TestContext> CTX = ThreadLocal.withInitial(TestContext::new);
 
     public static TestContext get() {
