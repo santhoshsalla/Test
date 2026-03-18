@@ -21,6 +21,8 @@ public class CartPage {
     private final By cartTotal = By.cssSelector("[data-testid='cart-total']");
     private final By cartMessage = By.cssSelector("[data-testid='cart-message'], [role='alert']");
     private final By retryButton = By.cssSelector("[data-testid='retry'], [data-testid='cart-retry']");
+    private final By emptyState = By.cssSelector("[data-testid='cart-empty'], [data-testid='empty-cart']");
+    private final By proceedToCheckout = By.cssSelector("[data-testid='proceed-to-checkout'], [data-testid='checkout'], button[aria-label='Proceed to checkout']");
 
     public CartPage(WebDriver driver) {
         this.driver = driver;
